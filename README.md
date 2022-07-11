@@ -2,5 +2,5 @@
 <li>ChangePhto_bright: 將照片的明暗程度透過opencv做更改。</li>
 <li>includedAngle: 使用有夾角的照片，透過opencv找到兩條線，再利用向量帶入數學公式算出相對應的角度。</li>
 <li>image_Vague: 檢測照片模糊值，如小於50代表照片模糊，閥值可依情況調整</li>
-<li>Pic_To_Cartoon:將人臉卡通化，需先創立兩個資料夾，一個為test放入人臉，另一個為result，會將產生好的檔案放入裡面，需再下載face_paint_512_v2.pt模型檔</li>
+<li>Pic_To_Cartoon:將人臉卡通化，需先創立兩個資料夾，一個為test放入人臉，另一個為result，需下載face_paint_512_v2.pt</li>
 </ui>

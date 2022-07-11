@@ -1,0 +1,41 @@
+import cv2
+import numpy as np
+
+def nothing(x):
+   pass
+
+cv2.namedWindow('Tracking')
+cv2.createTrackbar('bright','Tracking',0,255,nothing)
+brightlist =[]
+
+while True:
+   image = cv2.imread('tree4.png')
+   bright = cv2.getTrackbarPos("bright","Tracking")
+   gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+
+   fImg = image.astype(np.float32)
+   fImg = fImg / 255.0
+
+   hlsImg = cv2.cvtColor(fImg, cv2.COLOR_BGR2HLS)
+   hlsCopy = np.copy(hlsImg)
+
+   # lightness = 50 # lightness 調整為  "1 +/- 幾 %"
+   saturation = 300 # saturation 調整為 "1 +/- 幾 %"
+   hlsCopy[:, :, 1] = (1 + bright / 100.0) * hlsCopy[:, :, 1]
+   hlsCopy[:, :, 1][hlsCopy[:, :, 1] > 1] = 1  # 應該要介於 0~1，計算出來超過1 = 1
+
+   result_img = cv2.cvtColor(hlsCopy, cv2.COLOR_HLS2BGR)
+   result_img = ((result_img * 255).astype(np.uint8))
+   result_gray = cv2.cvtColor(result_img,cv2.COLOR_BGR2GRAY)
+
+   if bright not in brightlist:
+       print('origan',gray.mean())
+       print('after',result_gray.mean())
+       brightlist.append(bright)
+   cv2.imshow('image',image)
+   cv2.imshow('result_img',result_img)
+   if cv2.waitKey(1) == ord('q'):
+       cv2.imwrite('image.png',image)
+       cv2.imwrite('result.png',result_img)
+       break
+cv2.destroyAllWindows()

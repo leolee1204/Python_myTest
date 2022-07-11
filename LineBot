@@ -1,0 +1,674 @@
+from flask import Flask, request, abort
+from linebot import (
+   LineBotApi, WebhookHandler
+)
+from linebot.exceptions import (
+   InvalidSignatureError
+)
+import pyimgur
+import os
+from linebot.models import TemplateSendMessage,  PostbackTemplateAction, PostbackAction, PostbackEvent,URIAction, CarouselColumn, CarouselTemplate, MessageEvent, TextSendMessage, ImageSendMessage ,ImageCarouselTemplate,ImageCarouselColumn
+import webbrowser
+app = Flask(__name__)
+
+Channel_Access_Token = 'input your token'
+Channel_Secret = 'input your Secret'
+# Channel Access Token
+line_bot_api = LineBotApi(Channel_Access_Token)
+# Channel Secret
+handler = WebhookHandler(Channel_Secret)
+
+# 監聽所有來自 /callback 的 Post Request
+@app.route("/callback", methods=['POST'])
+def callback():
+   # get X-Line-Signature header value
+   signature = request.headers['X-Line-Signature']
+
+   # get request body as text
+   body = request.get_data(as_text=True)
+   app.logger.info("Request body: " + body)
+
+   # handle webhook body
+   try:
+       handler.handle(body, signature)
+   except InvalidSignatureError:
+       abort(400)
+
+   return 'OK'
+
+def piclink(name):
+   CLIENT_ID = "input your id"
+   PATH = name + ".png"
+   im = pyimgur.Imgur(CLIENT_ID)
+   uploaded_image = im.upload_image(PATH, title=name)
+
+   image_message = ImageSendMessage(
+       original_content_url=uploaded_image.link,
+       preview_image_url=uploaded_image.link
+   )
+   return uploaded_image.link
+
+def wang(event):
+   carousel_template_message = TemplateSendMessage(
+       alt_text='Carousel template',
+       template=CarouselTemplate(
+           columns=[
+               CarouselColumn(
+                   thumbnail_image_url='https://portal-hamipoint.cdn.hinet.net/storage/stores/August2019/4aCRvHn8adTlL2iwrBk6.jpg',
+                   title='王品',
+                   text='王品集團成立於1993年\n成功創立16個餐飲品牌\n全球總店數已超過400家\n躍居台灣第一大餐飲集團。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='王品文字雲',
+                           data= '王品文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/mNEHaGy.jpg',
+                   title='西堤牛排TASTy',
+                   text='九十年七月創立的西堤TASTY牛排\n以高品質、中價位的消費\n讓顧客享有最高級的套餐服務\n開拓另一種中價位的連鎖市場。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='西堤文字雲',
+                           data='西堤文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/XO9BQ3V.jpg',
+                   title='夏慕尼新香榭鐵板燒',
+                   text='大膽顛覆傳統鐵板燒的老式印象\n將法式料理及時尚元素融入鐵板料理\n設計出一道道精緻美味的餐點，營造獨特迷人的法式鐵板饗宴。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='夏慕尼文字雲',
+                           data='夏慕尼文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/Ac0Cbuz.jpg',
+                   title='石二鍋',
+                   text='2009年進軍火鍋市場，首創石二鍋\n以同一個鍋、兩種口味\n傳承懷舊石頭鍋的先炒再煮。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='石二鍋文字雲',
+                           data='石二鍋文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/IBsrv2x.png',
+                   title='陶板屋',
+                   text='陶板屋用陪伴與相聚的時光\n讓(家)的每個重要時刻\n都有陶板屋為您(家點溫度)\n拉近全家人的美味關係，溫暖加乘',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='陶板屋文字雲',
+                           data='陶板屋文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               )
+           ]
+       )
+   )
+   return carousel_template_message
+
+def TTFB(event):
+   carousel_template_message = TemplateSendMessage(
+       alt_text='Carousel template',
+       template=CarouselTemplate(
+           columns=[
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/AeWjQ5s.png',
+                   title='瓦城',
+                   text='1990年創立以來\n以高品質的道地美味\n親切熱誠的服務\n及溫馨舒適的環境\n已成為全台最大的泰式連鎖餐飲第一品牌。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='瓦城文字雲',
+                           data='瓦城文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/ySsapda.jpg',
+                   title='非常泰',
+                   text='成立於1995年\n結合辛辣美食與聲光音樂享受\n創造出泰國料理的嶄新現代風貌。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='非常泰文字雲',
+                           data='非常泰文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/ebLrIeZ.jpg',
+                   title='1010湘',
+                   text='成立於2006年，為全台最大的湘菜品牌\n把傳統湖南家鄉菜\n以現代美食觀感重新詮釋。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='1010湘文字雲',
+                           data='1010湘文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/0Nuwzf1.png',
+                   title='大心新泰式麵食',
+                   text='運用各式泰國香料\n嶄新演繹泰國麵食\n讓人感受到(大大滿足‧大大開心)的美味',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='大心文字雲',
+                           data='大心文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://swaggertest01.herokuapp.com/swagger-ui'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/9o9pLro.jpg',
+                   title='時時香',
+                   text='完美集結川台粵熱門中式名菜\n獨創全新的餐飲型態(SHANN RICE BAR)\n，提供道道經典\n道道下飯的多樣美味。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='時時香文字雲',
+                           data='時時香文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               )
+           ]
+       )
+   )
+   return carousel_template_message
+
+def imagesendword1(event,imagelink):
+   message = TemplateSendMessage(
+       alt_text='ImageCarousel template',
+       template=ImageCarouselTemplate(
+           columns=[
+               ImageCarouselColumn(
+                   image_url = imagelink,
+                   imageSize='contain',
+                   action=PostbackTemplateAction(
+                       label='back',
+                       text='back1',
+                       data='back1'
+                   )
+               )
+           ]
+       )
+   )
+   return message
+
+def imagesendword2(event,imagelink):
+   message = TemplateSendMessage(
+       alt_text='ImageCarousel template',
+       template=ImageCarouselTemplate(
+           columns=[
+               ImageCarouselColumn(
+                   image_url = imagelink,
+                   imageSize='contain',
+                   action=PostbackTemplateAction(
+                       label='back',
+                       text='back2',
+                       data='back2'
+                   )
+               )
+           ]
+       )
+   )
+   return message
+
+@handler.add(MessageEvent)
+def handle_message(event):
+   msg = event.message.text
+   if msg == "王品" or msg == 'back1':
+       msg = wang(event)
+       line_bot_api.reply_message(event.reply_token, msg)
+   elif msg == "瓦城" or msg == 'back2':
+       msg = TTFB(event)
+       line_bot_api.reply_message(event.reply_token, msg)
+   elif '文字雲' in msg :
+       try:
+           link = piclink(msg)
+           if msg.split('文字雲')[0] in ["石二鍋", "王品", "西堤", "夏慕尼","陶板屋"] :
+               msg = imagesendword1(event,link)
+               line_bot_api.reply_message(event.reply_token, msg)
+           else:
+               msg = imagesendword2(event, link)
+               line_bot_api.reply_message(event.reply_token, msg)
+       except:
+           msg = TextSendMessage('抓到你打錯字了')
+           line_bot_api.reply_message(event.reply_token, msg)
+
+   else:
+       msg = TextSendMessage("請輸入: \n王品\n或\n瓦城")
+       line_bot_api.reply_message(event.reply_token, msg)
+
+if __name__ == "__main__":
+   port = int(os.environ.get('PORT', 5000))
+   app.run(host='0.0.0.0', port=port)
+from flask import Flask, request, abort
+from linebot import (
+   LineBotApi, WebhookHandler
+)
+from linebot.exceptions import (
+   InvalidSignatureError
+)
+import pyimgur
+import os
+from linebot.models import TemplateSendMessage,  PostbackTemplateAction, PostbackAction, PostbackEvent,URIAction, CarouselColumn, CarouselTemplate, MessageEvent, TextSendMessage, ImageSendMessage ,ImageCarouselTemplate,ImageCarouselColumn
+import webbrowser
+app = Flask(__name__)
+
+Channel_Access_Token = 'input your token'
+Channel_Secret = 'input your Secret'
+# Channel Access Token
+line_bot_api = LineBotApi(Channel_Access_Token)
+# Channel Secret
+handler = WebhookHandler(Channel_Secret)
+
+# 監聽所有來自 /callback 的 Post Request
+@app.route("/callback", methods=['POST'])
+def callback():
+   # get X-Line-Signature header value
+   signature = request.headers['X-Line-Signature']
+
+   # get request body as text
+   body = request.get_data(as_text=True)
+   app.logger.info("Request body: " + body)
+
+   # handle webhook body
+   try:
+       handler.handle(body, signature)
+   except InvalidSignatureError:
+       abort(400)
+
+   return 'OK'
+
+def piclink(name):
+   CLIENT_ID = "input your id"
+   PATH = name + ".png"
+   im = pyimgur.Imgur(CLIENT_ID)
+   uploaded_image = im.upload_image(PATH, title=name)
+
+   image_message = ImageSendMessage(
+       original_content_url=uploaded_image.link,
+       preview_image_url=uploaded_image.link
+   )
+   return uploaded_image.link
+
+def wang(event):
+   carousel_template_message = TemplateSendMessage(
+       alt_text='Carousel template',
+       template=CarouselTemplate(
+           columns=[
+               CarouselColumn(
+                   thumbnail_image_url='https://portal-hamipoint.cdn.hinet.net/storage/stores/August2019/4aCRvHn8adTlL2iwrBk6.jpg',
+                   title='王品',
+                   text='王品集團成立於1993年\n成功創立16個餐飲品牌\n全球總店數已超過400家\n躍居台灣第一大餐飲集團。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='王品文字雲',
+                           data= '王品文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/mNEHaGy.jpg',
+                   title='西堤牛排TASTy',
+                   text='九十年七月創立的西堤TASTY牛排\n以高品質、中價位的消費\n讓顧客享有最高級的套餐服務\n開拓另一種中價位的連鎖市場。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='西堤文字雲',
+                           data='西堤文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/XO9BQ3V.jpg',
+                   title='夏慕尼新香榭鐵板燒',
+                   text='大膽顛覆傳統鐵板燒的老式印象\n將法式料理及時尚元素融入鐵板料理\n設計出一道道精緻美味的餐點，營造獨特迷人的法式鐵板饗宴。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='夏慕尼文字雲',
+                           data='夏慕尼文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/Ac0Cbuz.jpg',
+                   title='石二鍋',
+                   text='2009年進軍火鍋市場，首創石二鍋\n以同一個鍋、兩種口味\n傳承懷舊石頭鍋的先炒再煮。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='石二鍋文字雲',
+                           data='石二鍋文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/IBsrv2x.png',
+                   title='陶板屋',
+                   text='陶板屋用陪伴與相聚的時光\n讓(家)的每個重要時刻\n都有陶板屋為您(家點溫度)\n拉近全家人的美味關係，溫暖加乘',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='陶板屋文字雲',
+                           data='陶板屋文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               )
+           ]
+       )
+   )
+   return carousel_template_message
+
+def TTFB(event):
+   carousel_template_message = TemplateSendMessage(
+       alt_text='Carousel template',
+       template=CarouselTemplate(
+           columns=[
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/AeWjQ5s.png',
+                   title='瓦城',
+                   text='1990年創立以來\n以高品質的道地美味\n親切熱誠的服務\n及溫馨舒適的環境\n已成為全台最大的泰式連鎖餐飲第一品牌。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='瓦城文字雲',
+                           data='瓦城文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/ySsapda.jpg',
+                   title='非常泰',
+                   text='成立於1995年\n結合辛辣美食與聲光音樂享受\n創造出泰國料理的嶄新現代風貌。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='非常泰文字雲',
+                           data='非常泰文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/ebLrIeZ.jpg',
+                   title='1010湘',
+                   text='成立於2006年，為全台最大的湘菜品牌\n把傳統湖南家鄉菜\n以現代美食觀感重新詮釋。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='1010湘文字雲',
+                           data='1010湘文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/0Nuwzf1.png',
+                   title='大心新泰式麵食',
+                   text='運用各式泰國香料\n嶄新演繹泰國麵食\n讓人感受到(大大滿足‧大大開心)的美味',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='大心文字雲',
+                           data='大心文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://swaggertest01.herokuapp.com/swagger-ui'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               ),
+               CarouselColumn(
+                   thumbnail_image_url='https://i.imgur.com/9o9pLro.jpg',
+                   title='時時香',
+                   text='完美集結川台粵熱門中式名菜\n獨創全新的餐飲型態(SHANN RICE BAR)\n，提供道道經典\n道道下飯的多樣美味。',
+                   actions=[
+                       PostbackAction(
+                           label='文字雲',
+                           text='時時香文字雲',
+                           data='時時香文字雲'
+                       ),
+                       URIAction(
+                           label='SWAGGER文件',
+                           uri='https://restanalyze.azurewebsites.net/api_open.html'
+                       ),
+                       URIAction(
+                           label='各大平台聲量統計',
+                           uri='https://restanalyze.azurewebsites.net'
+                       )
+                   ]
+               )
+           ]
+       )
+   )
+   return carousel_template_message
+
+def imagesendword1(event,imagelink):
+   message = TemplateSendMessage(
+       alt_text='ImageCarousel template',
+       template=ImageCarouselTemplate(
+           columns=[
+               ImageCarouselColumn(
+                   image_url = imagelink,
+                   imageSize='contain',
+                   action=PostbackTemplateAction(
+                       label='back',
+                       text='back1',
+                       data='back1'
+                   )
+               )
+           ]
+       )
+   )
+   return message
+
+def imagesendword2(event,imagelink):
+   message = TemplateSendMessage(
+       alt_text='ImageCarousel template',
+       template=ImageCarouselTemplate(
+           columns=[
+               ImageCarouselColumn(
+                   image_url = imagelink,
+                   imageSize='contain',
+                   action=PostbackTemplateAction(
+                       label='back',
+                       text='back2',
+                       data='back2'
+                   )
+               )
+           ]
+       )
+   )
+   return message
+
+@handler.add(MessageEvent)
+def handle_message(event):
+   msg = event.message.text
+   if msg == "王品" or msg == 'back1':
+       msg = wang(event)
+       line_bot_api.reply_message(event.reply_token, msg)
+   elif msg == "瓦城" or msg == 'back2':
+       msg = TTFB(event)
+       line_bot_api.reply_message(event.reply_token, msg)
+   elif '文字雲' in msg :
+       try:
+           link = piclink(msg)
+           if msg.split('文字雲')[0] in ["石二鍋", "王品", "西堤", "夏慕尼","陶板屋"] :
+               msg = imagesendword1(event,link)
+               line_bot_api.reply_message(event.reply_token, msg)
+           else:
+               msg = imagesendword2(event, link)
+               line_bot_api.reply_message(event.reply_token, msg)
+       except:
+           msg = TextSendMessage('抓到你打錯字了')
+           line_bot_api.reply_message(event.reply_token, msg)
+
+   else:
+       msg = TextSendMessage("請輸入: \n王品\n或\n瓦城")
+       line_bot_api.reply_message(event.reply_token, msg)
+
+if __name__ == "__main__":
+   port = int(os.environ.get('PORT', 5000))
+   app.run(host='0.0.0.0', port=port)

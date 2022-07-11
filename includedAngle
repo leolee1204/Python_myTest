@@ -1,0 +1,129 @@
+import time
+import cv2
+import numpy as np
+import math
+
+def nothing(x):
+    pass
+
+def get_hsv(name):
+    #利用BAR取到要的HSV
+    cv2.namedWindow('hsv_demo', cv2.WINDOW_NORMAL)
+    cv2.createTrackbar('hl', 'hsv_demo', 0, 255, nothing)
+    cv2.createTrackbar('hu', 'hsv_demo', 0, 255, nothing)
+    cv2.createTrackbar('sl', 'hsv_demo', 0, 255, nothing)
+    cv2.createTrackbar('su', 'hsv_demo', 0, 255, nothing)
+    cv2.createTrackbar('vl', 'hsv_demo', 0, 255, nothing)
+    cv2.createTrackbar('vu', 'hsv_demo', 0, 255, nothing)
+
+    while True:
+        image = cv2.imread('watch.png')
+        hl = cv2.getTrackbarPos('hl', 'hsv_demo')
+        hu = cv2.getTrackbarPos('hu', 'hsv_demo')
+        sl = cv2.getTrackbarPos('sl', 'hsv_demo')
+        su = cv2.getTrackbarPos('su', 'hsv_demo')
+        vl = cv2.getTrackbarPos('vl', 'hsv_demo')
+        vu = cv2.getTrackbarPos('vu', 'hsv_demo')
+
+        hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+        lower = np.array([hl, sl, vl])
+        upper = np.array([hu, su, vu])
+
+        mask = cv2.inRange(hsv, lower, upper)
+        bitwise_and = cv2.bitwise_and(image, image, mask=mask)
+        cv2.imshow("hsv_demo", bitwise_and)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            cv2.imwrite(name + ".png", bitwise_and)
+            break
+    cv2.destroyAllWindows()
+
+def get_canny(name):
+    #利用BAR取到相對應的CANNY
+    cv2.namedWindow('canny_demo', cv2.WINDOW_NORMAL)
+    cv2.createTrackbar('threshold', 'canny_demo', 0, 255, nothing)
+    cv2.createTrackbar('ration', 'canny_demo', 0, 10, nothing)
+
+    image = cv2.imread("watchtest.png")
+    while True:
+        threshold = cv2.getTrackbarPos('threshold', 'canny_demo')
+        ratio = cv2.getTrackbarPos('ration', 'canny_demo')
+
+        gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        h,w = gray.shape
+        edges = cv2.GaussianBlur(gray, (5, 5), 0)
+        test02 = cv2.Canny(edges, threshold, threshold * ratio, 2)
+        cv2.imshow('test02', test02)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            cv2.imwrite(name + ".png", test02)
+            break
+    cv2.destroyAllWindows()
+
+def get_angel(line1,line2):
+    #兩點夾角公式
+    dx1 =line1[0][0] - line1[1][0]
+    dy1 = line1[0][1] - line1[1][1]
+    dx2 = line2[0][0] - line2[1][0]
+    dy2 = line2[0][1] - line2[1][1]
+
+    angle1 = int(math.atan2(dy1,dx1)*180/math.pi)
+    angle2 = int(math.atan2(dy2,dx2)*180/math.pi)
+    if angle1 * angle2 >= 0:
+        insideAngle = abs(angle1 - angle2)
+    else:
+        insideAngle = abs(angle1) + abs(angle2)
+        if insideAngle > 180:
+            insideAngle = 360 - insideAngle
+    insideAngle = insideAngle % 180
+    return insideAngle
+
+def get_line(name):
+    #取得時針與分針的線段
+    image = cv2.imread('watchtest02.png')
+    gray = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+    h,w = gray.shape
+    lines = cv2.HoughLines(gray, 1, np.pi / 180,1)
+
+
+    (rho, theta)= lines[0][0]
+    x0 = np.cos(theta)*rho
+    y0 = np.sin(theta)*rho
+    x1 = np.sin(theta) * rho
+    y1 = np.cos(theta) * rho
+    dis =  int(math.sqrt((y1-y0)**2 + (x1-x0)**2))
+    dis_x = 0
+    while True:
+        angellist = []
+        dis_x +=0.1
+        pt1 = ( int(x0 + (h+w)*(-np.sin(theta))), int(y0 + (h+w)*np.cos(theta)) )
+        pt2 = ( int(x0 - (h+w)*(-np.sin(theta))), int(y0 - (h+w)*np.cos(theta)) )
+
+        pt3 = (int(x1 - (h + w) * (-np.sin(theta))+int(x1)-dis*dis_x), int(y0 + (h + w) * np.cos(theta)))
+        pt4 = (int(y1 + (h + w) * (-np.sin(theta))+int(y1)-dis*dis_x), int(y0 - (h + w) * np.cos(theta)))
+
+        cv2.line(image, pt1, pt2, (0, 0, 255), 3)
+        cv2.line(image, pt3, pt4, (0, 255, 0), 3)
+
+        angellist.append([pt1,pt2])
+        angellist.append([pt3,pt4])
+
+        print(pt1,pt2,pt3,pt4)
+
+        line1,line2 = angellist
+        angle = get_angel(line1, line2)
+
+        text = 'angle: ' + str(angle)
+        text2 = 'watch angle'
+        cv2.putText(image, text, (int(x0),int(y0)+20), cv2.FONT_HERSHEY_SIMPLEX,
+                    1, (0, 255, 255), 1, cv2.LINE_AA)
+        cv2.putText(image, text2, (10,40), cv2.FONT_HERSHEY_SIMPLEX,
+                    1, (255, 0, 0), 2, cv2.LINE_AA)
+        cv2.imshow("HoughLines", image)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            cv2.imwrite(name + ".png", image)
+            break
+        cv2.line(image, pt3, pt4, (0, 0, 0), 3)
+        time.sleep(2)
+if __name__ == "__main__":
+  get_hsv('watchtest')
+  get_canny('watchtest02')
+  get_line('watchtest03')

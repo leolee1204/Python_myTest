@@ -1,0 +1,59 @@
+from pymysql import escape_string #PyMySQL==0.9.3
+import mysql.connector #python -m pip install mysql-connector
+import json
+
+def creat_database():
+    mydb = mysql.connector.connect(
+        host="your host name",
+        port=3306,
+        user="your user name",
+        password="your password"
+      )
+    cursor = mydb.cursor()
+    cursor.execute("CREATE DATABASE IF NOT EXISTS MYDB")
+    mydb.close()
+
+def insertMessage(name,place):
+    mydb = mysql.connector.connect(
+        host="your host name",
+        port=3306,
+        user="your user name",
+        password="your password"
+        database='MYDB',
+        charset='utf8mb4'
+      )
+    cursor = mydb.cursor()
+    # 建立table
+    creat_tabel = """
+        CREATE TABLE IF NOT EXISTS `{}`
+        #內容比較長先寫VARCHAR(10000)
+        (id INT AUTO_INCREMENT PRIMARY Key,date  DATE,content VARCHAR(10000),brand VARCHAR(50),src VARCHAR(50))
+        """.format(name)
+    cursor.execute(creat_tabel)
+    #要存入emoji
+    sql = f'''
+    ALTER TABLE `{name}` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+    '''
+    cursor.execute(sql)
+    data = json.load(open(name + '_' + place + '.json','r',encoding='utf-8'))
+    for row in data:
+        print(row['content'])
+        sql = f'''INSERT INTO `{name}` (date,content,brand,src) VALUES (%s, %s,%s,%s)'''
+        val = (row['time'].split('T')[0], escape_string(row['content']),row['brand'],row['src'])
+        cursor.execute(sql, val)
+    mydb.commit()
+    mydb.close()
+
+if __name__ == "__main__":
+    creat_database()
+    names = ['王品','夏慕尼','西堤','石二鍋','非常泰','瓦城','時時香','1010湘',]
+    places = ['ig','ptt','dcard','google']
+    places = ['google']
+    names = ['西堤']
+
+    for name in names:
+        for place in places:
+            try:
+                insertMessage(name,place)
+            except:
+                pass

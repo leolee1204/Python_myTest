@@ -1,0 +1,126 @@
+import re
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from fake_useragent import UserAgent
+import random
+import mouse
+import math
+from pynput import keyboard
+import os
+
+def twd97_to_lonlat(x, y):
+    """
+    Parameters
+    ----------
+    x : float
+        TWD97 coord system. The default is 174458.0.
+    y : float
+        TWD97 coord system. The default is 2525824.0.
+    Returns
+    -------
+    list
+        [longitude, latitude]
+    """
+
+    a = 6378137
+    b = 6356752.314245
+    long_0 = 121 * math.pi / 180.0
+    k0 = 0.9999
+    dx = 250000
+    dy = 0
+
+    e = math.pow((1 - math.pow(b, 2) / math.pow(a, 2)), 0.5)
+
+    x -= dx
+    y -= dy
+
+    M = y / k0
+
+    mu = M / (a * (1 - math.pow(e, 2) / 4 - 3 * math.pow(e, 4) / 64 - 5 * math.pow(e, 6) / 256))
+    e1 = (1.0 - pow((1 - pow(e, 2)), 0.5)) / (1.0 + math.pow((1.0 - math.pow(e, 2)), 0.5))
+
+    j1 = 3 * e1 / 2 - 27 * math.pow(e1, 3) / 32
+    j2 = 21 * math.pow(e1, 2) / 16 - 55 * math.pow(e1, 4) / 32
+    j3 = 151 * math.pow(e1, 3) / 96
+    j4 = 1097 * math.pow(e1, 4) / 512
+
+    fp = mu + j1 * math.sin(2 * mu) + j2 * math.sin(4 * mu) + j3 * math.sin(6 * mu) + j4 * math.sin(8 * mu)
+
+    e2 = math.pow((e * a / b), 2)
+    c1 = math.pow(e2 * math.cos(fp), 2)
+    t1 = math.pow(math.tan(fp), 2)
+    r1 = a * (1 - math.pow(e, 2)) / math.pow((1 - math.pow(e, 2) * math.pow(math.sin(fp), 2)), (3 / 2))
+    n1 = a / math.pow((1 - math.pow(e, 2) * math.pow(math.sin(fp), 2)), 0.5)
+    d = x / (n1 * k0)
+
+    q1 = n1 * math.tan(fp) / r1
+    q2 = math.pow(d, 2) / 2
+    q3 = (5 + 3 * t1 + 10 * c1 - 4 * math.pow(c1, 2) - 9 * e2) * math.pow(d, 4) / 24
+    q4 = (61 + 90 * t1 + 298 * c1 + 45 * math.pow(t1, 2) - 3 * math.pow(c1, 2) - 252 * e2) * math.pow(d, 6) / 720
+    lat = fp - q1 * (q2 - q3 + q4)
+
+    q5 = d
+    q6 = (1 + 2 * t1 + c1) * math.pow(d, 3) / 6
+    q7 = (5 - 2 * c1 + 28 * t1 - 3 * math.pow(c1, 2) + 8 * e2 + 24 * math.pow(t1, 2)) * math.pow(d, 5) / 120
+    lon = long_0 + (q5 - q6 + q7) / math.cos(fp)
+
+    lat = (lat * 180) / math.pi
+    lon = (lon * 180) / math.pi
+    return [lon, lat]
+
+def conn_page():
+    global driver
+    opts = Options()
+    ua = UserAgent()
+    opts.add_argument('--disable-gpu')
+    opts.add_argument("user-agent=" + ua.chrome)
+    driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(),chrome_options=opts)
+
+    driver.get('https://www.historygis.udd.gov.taipei/urban/')
+    driver.implicitly_wait(random.randint(5,15))
+    driver.find_element_by_id('btnWarning').click()
+
+    while True:
+    #點選滑鼠左鍵即時座標轉換
+    #空白鍵=>儲存txt檔案
+    #滑鼠右鍵結束
+    
+        if mouse.is_pressed("left"):
+            lon,lat = get_content()
+            print(lon,lat)
+            if keyboard.Key.space:
+                with open('wgs84_coordinate.txt', 'a') as f:
+                    f.writelines([str(lon) + " " + str(lat) + '\n'])
+
+        elif mouse.is_pressed("right"):
+            clear_txt()
+            driver.quit()
+            break
+
+def get_content():
+    soup = BeautifulSoup(driver.page_source, 'lxml')
+    x_point = soup.select('#mapCoordsX')
+    y_point = soup.select('#mapCoordsY')
+
+    x_point = float(re.findall(r'\d+', str(x_point))[0])
+    y_point = float(re.findall(r'\d+', str(y_point))[0])
+
+    lon, lat = twd97_to_lonlat(x_point, y_point)
+    lon, lat = round(lon, 5), round(lat, 5)
+    return lon,lat
+
+def clear_txt():
+    with open('wgs84_coordinate.txt','r')as f:
+        data = f.readlines()
+    data2 = list(set(data))
+    data2.sort(key=data.index)
+    with open('wgs84_coordinate.txt','w')as f:
+        for x in data2:
+            f.writelines(x.strip()+'\n')
+
+if __name__ =="__main__":
+    if 'wgs84_coordinate.txt' in os.listdir():
+        os.remove('wgs84_coordinate.txt')
+    conn_page()

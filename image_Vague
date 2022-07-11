@@ -1,0 +1,43 @@
+from imutils import paths
+import argparse
+import cv2
+
+#Laplacian方法能夠進行這項工作的原因是Laplacian算子是用來衡量圖片的二階導，能夠強調圖片中密度快速變化的區域，
+# 也就是邊界，故常用於邊界檢測。在正常圖片中邊界比較清晰因此方差會比較大；而在模糊圖片中包含的邊界信息很少，所以方差會較小。
+def variance_of_laplacian(image):
+  '''
+   計算圖像的laplacian響應的方差值
+   '''
+  return cv2.Laplacian(image, cv2.CV_64F).var()
+
+if __name__ == '__main__':
+   ap = argparse.ArgumentParser()
+   ap.add_argument("-i", "--image",required=True, help="設置輸入圖片的路徑")
+   ap.add_argument("-t", "--threshold", type=float, default=50.0, help="設置模糊閾值")
+   args = vars(ap.parse_args())
+   
+   #讀取每一張在image內的照片
+   for i,imagePath in enumerate(paths.list_images(args["image"])):
+       image = cv2.imread(imagePath)
+       # 將圖片轉換爲灰度圖片
+       gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+       # 計算灰度圖片的方差
+       score = variance_of_laplacian(gray)
+       text = "Not Blurry"
+
+       # # 設置輸出的文字
+
+       # if score < args["threshold"]:
+       #     text = "Blurry"
+       if score < 50:
+           text = "Blurry"
+       # 顯示結果寫入照片內
+       cv2.putText(image, "{}: {:.2f}".format(text, score), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 3)
+       cv2.imwrite("shake\\"+str(i)+'.png',image)
+       cv2.imshow("Image", image)
+       cv2.waitKey(0)
+cv2.destroyallwindows()
+
+#將照片放入同層的image內
+#在終端機cd進入同層
+#執行python image_Vague.py -i image -t 50

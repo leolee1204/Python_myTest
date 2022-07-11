@@ -1,0 +1,55 @@
+import argparse
+import re
+import sys
+from google.cloud import automl_v1beta1
+#pip install google-api-python-client==1.8.4 google-cloud-pubsub
+import os
+from imutils import paths
+import cv2
+import numpy as np
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="key.json"
+
+# 'content' is base-64-encoded image data.
+def get_prediction(content):
+  project_id = 'your project id'
+  model_id = 'your model id'
+  #模型
+  prediction_client = automl_v1beta1.PredictionServiceClient()
+
+  name = 'projects/{}/locations/us-central1/models/{}'.format(project_id, model_id)
+  payload = {'image': {'image_bytes': content }}
+  params = {}
+  request = prediction_client.predict(name=name, payload=payload, params=params)
+  return request  # waits till request is returned
+
+if __name__ == '__main__':
+  # file_path = sys.argv[1]
+  # project_id = sys.argv[2]
+  # model_id = sys.argv[3]
+
+  # with open(file_path, 'rb') as ff:
+  #   content = ff.read()
+  #
+  # print(get_prediction(content))
+  # print(get_prediction(content, project_id, model_id))
+  #在本地端的資料夾，將test的照片放入test filefolder內
+  ap = argparse.ArgumentParser()
+  ap.add_argument('-t','--test',required=True,help='images path')
+  args = vars(ap.parse_args())
+  #將測試好的資料丟入result
+  if not os.path.exists('result'):
+    os.mkdir('result')
+
+  for i,imagePath in enumerate(paths.list_images(args["test"])):
+    with open(imagePath, 'rb') as ff:
+      content = ff.read()
+    data = str(get_prediction(content))
+    score = round(float(re.findall('score: (.+)',data)[0]),3)
+    name = re.findall('display_name: "(.+)"',data)[0]
+    image = cv2.imread(imagePath)
+    #寫入labelName&score
+    cv2.putText(image, "{}: {}".format(name, str(score)), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 3)
+    cv2.imwrite(f"result/{i}.png", image)
+    # key = cv2.waitKey(0)
+  # cv2.destroyAllWindows()

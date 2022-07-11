@@ -1,0 +1,51 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.action_chains import ActionChains
+from webdriver_manager.chrome import ChromeDriverManager
+from bs4 import BeautifulSoup
+import os
+from urllib import request
+from time import sleep
+import random
+
+
+name = input('name: ')
+url = input('url: ')
+if not os.path.exists(name):
+   os.mkdir(name)
+
+opts = Options()
+opts.add_argument('--disable-gpu') #不啟動gpu
+# opts.add_argument('--headless') #無頭
+driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(),chrome_options=opts)
+driver.get(url)
+driver.implicitly_wait(10)
+
+imagelist = []
+#看要滑到底幾次
+for i in range(3):
+    soup = BeautifulSoup(driver.page_source,'lxml')
+    herfs = soup.find_all('img')
+
+    for href in herfs:
+       if href.get('src') != 'None':
+           imagelist.append(href.get('src'))
+    sleep(random.randint(0,2)+random.random())
+    driver.execute_script("window.scrollTo(0,document.body.scrollHeight);")
+
+#去重
+imagelist = list(set(imagelist))
+
+for i,link in enumerate(imagelist[3:]):
+   try:
+       filename = str(i) + '.png'
+       opener = request.build_opener()
+       opener.addheaders = [('User-agent','your User-agent'),
+                            ('accept','your accept')]
+
+       request.install_opener(opener)
+       request.urlretrieve(link,'{}/{}'.format(name,filename))
+   except:
+       pass
+
+driver.quit()

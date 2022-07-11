@@ -1,0 +1,23 @@
+import os
+import pandas as pd
+
+mint = os.listdir('mint')
+pest = os.listdir('pest')
+sick = os.listdir('sick')
+
+data = []
+labels = []
+for x in mint:
+    data.append('gs://mint_test_ml/mint/' + x)
+    labels.append('mint')
+
+for x in pest:
+    data.append('gs://mint_test_ml/pest/' + x)
+    labels.append('pest')
+
+for x in sick:
+    data.append('gs://mint_test_ml/sick/' + x)
+    labels.append('sick')
+
+df = pd.DataFrame([data,labels]).T
+df.to_csv('index.csv',index=False,header=False)

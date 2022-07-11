@@ -10,9 +10,9 @@ from datetime import timedelta
 
 def db_init():
     db = pymysql.connect(
-        host='resanalyze.onthewifi.com',
-        user='alldatainhere',
-        password='SiDs5hPRSC/Vq[W1',
+        host='input your host',
+        user='input your user',
+        password='input your password',
         port=3306,
         db='MYDB'
     )

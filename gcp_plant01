@@ -1,0 +1,37 @@
+import requests
+import json
+from pprint import pprint
+
+
+def plant_id(image_path_1):
+    confidence_level = 0.1  # 信心分數
+    plant_result = True  # 植物辨識結果
+
+    API_KEY = "input api_key"  # Set you API_KEY here
+    api_endpoint = f"https://my-api.plantnet.org/v2/identify/all?api-key={API_KEY}"
+
+    image_data_1 = open(image_path_1, 'rb')
+
+    data = {
+        'organs': ['leaf']  # 植物部位 葉子
+    }
+
+    files = [
+        ('images', (image_path_1, image_data_1)),
+    ]
+
+    req = requests.Request('POST', url=api_endpoint, files=files, data=data)
+    prepared = req.prepare()
+
+    s = requests.Session()
+    response = s.send(prepared)
+    json_result = json.loads(response.text)
+    print(json_result)
+    for i in range(len(json_result['results'])):
+        if float(json_result['results'][i]['score']) >= confidence_level:
+            pprint(json_result['results'][i]['score'])
+            plant_result = True
+            break
+        elif float(json_result['results'][i]['score']) <= confidence_level:
+            plant_result = False
+    return {'status':str(plant_result)}

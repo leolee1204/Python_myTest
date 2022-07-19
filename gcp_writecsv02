@@ -1,0 +1,28 @@
+import os
+import pandas as pd
+
+mint = os.listdir('mint')
+tetranychus = os.listdir('tetranychus')
+aphid = os.listdir('aphid')
+rust = os.listdir('rust')
+
+data = []
+labels = []
+for x in mint:
+    data.append('gs://mintautomltest/mint/' + x)
+    labels.append('mint')
+
+for x in tetranychus:
+    data.append('gs://mintautomltest/tetranychus/' + x)
+    labels.append('tetranychus')
+
+for x in aphid:
+    data.append('gs://mintautomltest/aphid/' + x)
+    labels.append('aphid')
+
+for x in rust:
+    data.append('gs://mintautomltest/rust/' + x)
+    labels.append('rust')
+
+df = pd.DataFrame([data,labels]).T
+df.to_csv('index.csv',index=False,header=False)

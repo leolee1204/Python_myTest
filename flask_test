@@ -1,0 +1,48 @@
+from flask import Flask,render_template,request
+from gcp_test02 import *
+from plant import plant_id
+import datetime
+import random
+
+def create_uuid():
+    nowTime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    randomNum = random.randint(0,100)
+    uniqueNum = str(nowTime) + str(randomNum)
+    return uniqueNum
+
+app = Flask(__name__)
+UPLOAD_FOLDER = 'up_photo'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+basedir = os.path.abspath(os.path.dirname(__file__))
+ALLOWD_EXTENSIONS = set(['png','jpg','JPG','PNG','gif','GIF','jpeg','JEPG'])
+
+
+def allowd_file(filename):
+    return '.' in filename and filename.rsplit('.',1)[1] in ALLOWD_EXTENSIONS
+
+@app.route('/')
+def upload_test():
+    return render_template('index.html')
+
+@app.route('/up_photo',methods=['POST'],strict_slashes=False)
+def api_upload():
+    file_dir = os.path.join(basedir,app.config['UPLOAD_FOLDER'])
+    if not os.path.exists(file_dir):
+        os.makedirs(file_dir)
+    f = request.files['photo']
+
+    if f and allowd_file(f.filename):
+        new_filename = create_uuid()
+        f.save(os.path.join(file_dir,new_filename+'.png'))
+        path = os.path.join(file_dir,new_filename+'.png')
+        try:
+            plant_true_false = plant_id(path)['status']
+            if plant_true_false.lower() == 'true':
+                result = get_label(path)
+                return result
+            elif plant_true_false.lower() == 'false':
+                return '不是植物'
+        except:
+            return render_template('index2.html')
+if __name__ == '__main__':
+    app.run(debug=True)

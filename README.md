@@ -1,5 +1,8 @@
 <ui>
-  <li>write_csv:GCP storage需要有一個INDEX.CSV把所有訓練圖片路徑都放入csv內</li>
-  <li>訓練模型節點越多訓練時間越長</li>
-  <li>gcp_modeltest:將test的照片放入test的資料夾</li> 
+  <li>first:開設一個storage 需要位置在central才能使用</li>
+  <li>second:將照片上傳至storage</li>
+  <li>three:將路徑index寫入csv</li>
+  <li>four:Vision autoML開始訓練及部署</li>
+  <li>five:I am ->服務帳號 ->新增 automl預測者</li>
+  <li>six:開始預測</li>
 </ui>
